@@ -1,7 +1,6 @@
 """Pytest configuration and shared fixtures for langchain-pubnub tests."""
 
 import os
-from typing import Generator
 from unittest.mock import MagicMock
 
 import pytest

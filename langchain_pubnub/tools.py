@@ -1,5 +1,4 @@
-"""
-LangChain PubNub Tool
+"""LangChain PubNub Tool.
 
 A LangChain tool for interacting with PubNub's real-time messaging platform.
 Provides publish, subscribe, and history operations for LangChain agents.
@@ -8,69 +7,72 @@ Requirements:
     pip install pubnub langchain-core pydantic
 """
 
+from __future__ import annotations
+
 import json
-import time
 import threading
-from typing import Any, Dict, List, Optional, Type, Union
-from pydantic import BaseModel, Field
+import time
+from typing import Any, Optional, Union
 
-from langchain_core.tools import BaseTool
 from langchain_core.callbacks import CallbackManagerForToolRun
-
+from langchain_core.tools import BaseTool
+from pydantic import BaseModel, Field
+from pubnub.exceptions import PubNubException
 from pubnub.pnconfiguration import PNConfiguration
 from pubnub.pubnub import PubNub, SubscribeListener
-from pubnub.exceptions import PubNubException
 
 
 class PubNubPublishInput(BaseModel):
     """Input schema for PubNub publish operation."""
+
     channel: str = Field(description="The channel name to publish the message to")
-    message: Union[str, Dict[str, Any]] = Field(
+    message: Union[str, dict[str, Any]] = Field(
         description="The message to publish. Can be a string or a JSON-serializable dictionary"
     )
-    meta: Optional[Dict[str, Any]] = Field(
+    meta: Optional[dict[str, Any]] = Field(
         default=None,
-        description="Optional metadata to include with the message for filtering"
+        description="Optional metadata to include with the message for filtering",
     )
 
 
 class PubNubHistoryInput(BaseModel):
     """Input schema for PubNub history operation."""
-    channels: List[str] = Field(description="List of channel names to fetch history from")
+
+    channels: list[str] = Field(description="List of channel names to fetch history from")
     count: int = Field(
         default=25,
-        description="Number of messages to retrieve per channel (max 100 for single channel, 25 for multiple)"
+        description="Number of messages to retrieve per channel (max 100 for single channel, 25 for multiple)",
     )
     include_meta: bool = Field(
         default=False,
-        description="Whether to include message metadata in the response"
+        description="Whether to include message metadata in the response",
     )
     start: Optional[int] = Field(
         default=None,
-        description="Timetoken to start fetching from (exclusive, for pagination)"
+        description="Timetoken to start fetching from (exclusive, for pagination)",
     )
     end: Optional[int] = Field(
         default=None,
-        description="Timetoken to fetch up to (inclusive)"
+        description="Timetoken to fetch up to (inclusive)",
     )
 
 
 class PubNubSubscribeInput(BaseModel):
     """Input schema for PubNub subscribe operation."""
+
     channel: str = Field(description="The channel name to subscribe to")
     timeout: int = Field(
         default=5,
-        description="Maximum time in seconds to wait for messages"
+        description="Maximum time in seconds to wait for messages",
     )
     max_messages: int = Field(
         default=10,
-        description="Maximum number of messages to collect before returning"
+        description="Maximum number of messages to collect before returning",
     )
 
 
 class PubNubPublishTool(BaseTool):
-    """
-    Tool for publishing messages to a PubNub channel.
+    """Tool for publishing messages to a PubNub channel.
 
     Use this tool when you need to send real-time messages to subscribers
     on a specific channel.
@@ -82,19 +84,19 @@ class PubNubPublishTool(BaseTool):
         "to all subscribers of a channel. Messages must be JSON-serializable and "
         "under 32KB. Returns the publish timetoken on success."
     )
-    args_schema: Type[BaseModel] = PubNubPublishInput
+    args_schema: type[BaseModel] = PubNubPublishInput
 
     pubnub: Any = Field(exclude=True)
 
-    def __init__(self, pubnub: PubNub, **kwargs):
+    def __init__(self, pubnub: PubNub, **kwargs: Any) -> None:
         """Initialize the publish tool with a PubNub instance."""
         super().__init__(pubnub=pubnub, **kwargs)
 
     def _run(
         self,
         channel: str,
-        message: Union[str, Dict[str, Any]],
-        meta: Optional[Dict[str, Any]] = None,
+        message: Union[str, dict[str, Any]],
+        meta: Optional[dict[str, Any]] = None,
         run_manager: Optional[CallbackManagerForToolRun] = None,
     ) -> str:
         """Execute the publish operation."""
@@ -110,19 +112,18 @@ class PubNubPublishTool(BaseTool):
                 "success": True,
                 "timetoken": envelope.result.timetoken,
                 "channel": channel,
-                "message": "Message published successfully"
+                "message": "Message published successfully",
             })
         except PubNubException as e:
             return json.dumps({
                 "success": False,
                 "error": str(e),
-                "channel": channel
+                "channel": channel,
             })
 
 
 class PubNubHistoryTool(BaseTool):
-    """
-    Tool for fetching message history from PubNub channels.
+    """Tool for fetching message history from PubNub channels.
 
     Use this tool when you need to retrieve past messages from one or more channels.
     Requires Message Persistence to be enabled on your PubNub keyset.
@@ -135,17 +136,17 @@ class PubNubHistoryTool(BaseTool):
         "content, timetoken, and optional metadata. Max 100 messages per channel "
         "for single channel, 25 for multiple channels."
     )
-    args_schema: Type[BaseModel] = PubNubHistoryInput
+    args_schema: type[BaseModel] = PubNubHistoryInput
 
     pubnub: Any = Field(exclude=True)
 
-    def __init__(self, pubnub: PubNub, **kwargs):
+    def __init__(self, pubnub: PubNub, **kwargs: Any) -> None:
         """Initialize the history tool with a PubNub instance."""
         super().__init__(pubnub=pubnub, **kwargs)
 
     def _run(
         self,
-        channels: List[str],
+        channels: list[str],
         count: int = 25,
         include_meta: bool = False,
         start: Optional[int] = None,
@@ -169,9 +170,9 @@ class PubNubHistoryTool(BaseTool):
             envelope = fetch_builder.sync()
 
             # Format the results
-            result = {
+            result: dict[str, Any] = {
                 "success": True,
-                "channels": {}
+                "channels": {},
             }
 
             for channel_name, messages in envelope.result.channels.items():
@@ -179,7 +180,7 @@ class PubNubHistoryTool(BaseTool):
                     {
                         "message": msg.message,
                         "timetoken": msg.timetoken,
-                        "meta": msg.meta if include_meta else None
+                        "meta": msg.meta if include_meta else None,
                     }
                     for msg in messages
                 ]
@@ -189,39 +190,40 @@ class PubNubHistoryTool(BaseTool):
             return json.dumps({
                 "success": False,
                 "error": str(e),
-                "channels": channels
+                "channels": channels,
             })
 
 
 class MessageCollector(SubscribeListener):
     """Listener that collects messages for the subscribe tool."""
 
-    def __init__(self, max_messages: int = 10):
+    def __init__(self, max_messages: int = 10) -> None:
+        """Initialize the message collector."""
         super().__init__()
-        self.messages = []
+        self.messages: list[dict[str, Any]] = []
         self.max_messages = max_messages
         self.lock = threading.Lock()
 
-    def status(self, pubnub, status):
-        pass  # Status changes handled silently
+    def status(self, pubnub: Any, status: Any) -> None:
+        """Handle status changes silently."""
 
-    def message(self, pubnub, message):
+    def message(self, pubnub: Any, message: Any) -> None:
+        """Collect incoming messages."""
         with self.lock:
             if len(self.messages) < self.max_messages:
                 self.messages.append({
                     "channel": message.channel,
                     "message": message.message,
                     "timetoken": message.timetoken,
-                    "publisher": message.publisher
+                    "publisher": message.publisher,
                 })
 
-    def presence(self, pubnub, presence):
-        pass  # Presence events not collected
+    def presence(self, pubnub: Any, presence: Any) -> None:
+        """Handle presence events (not collected)."""
 
 
 class PubNubSubscribeTool(BaseTool):
-    """
-    Tool for subscribing to a PubNub channel and collecting messages.
+    """Tool for subscribing to a PubNub channel and collecting messages.
 
     Use this tool when you need to listen for real-time messages on a channel.
     This is a blocking operation that waits for messages up to a timeout.
@@ -234,11 +236,11 @@ class PubNubSubscribeTool(BaseTool):
         "or until max_messages are received. Returns collected messages. "
         "Use this when you need to receive live messages from a channel."
     )
-    args_schema: Type[BaseModel] = PubNubSubscribeInput
+    args_schema: type[BaseModel] = PubNubSubscribeInput
 
     pubnub: Any = Field(exclude=True)
 
-    def __init__(self, pubnub: PubNub, **kwargs):
+    def __init__(self, pubnub: PubNub, **kwargs: Any) -> None:
         """Initialize the subscribe tool with a PubNub instance."""
         super().__init__(pubnub=pubnub, **kwargs)
 
@@ -277,19 +279,18 @@ class PubNubSubscribeTool(BaseTool):
                 "channel": channel,
                 "messages": collector.messages,
                 "count": len(collector.messages),
-                "timeout_reached": len(collector.messages) < max_messages
+                "timeout_reached": len(collector.messages) < max_messages,
             })
         except PubNubException as e:
             return json.dumps({
                 "success": False,
                 "error": str(e),
-                "channel": channel
+                "channel": channel,
             })
 
 
 class PubNubToolkit:
-    """
-    A toolkit that provides all PubNub tools for LangChain agents.
+    """A toolkit that provides all PubNub tools for LangChain agents.
 
     Usage:
         from langchain_pubnub import PubNubToolkit
@@ -310,10 +311,9 @@ class PubNubToolkit:
         subscribe_key: str,
         user_id: str,
         ssl: bool = True,
-        **kwargs
-    ):
-        """
-        Initialize the PubNub toolkit.
+        **kwargs: Any,
+    ) -> None:
+        """Initialize the PubNub toolkit.
 
         Args:
             publish_key: Your PubNub publish key
@@ -340,12 +340,12 @@ class PubNubToolkit:
         self._history_tool = PubNubHistoryTool(pubnub=self.pubnub)
         self._subscribe_tool = PubNubSubscribeTool(pubnub=self.pubnub)
 
-    def get_tools(self) -> List[BaseTool]:
+    def get_tools(self) -> list[BaseTool]:
         """Get all PubNub tools as a list."""
         return [
             self._publish_tool,
             self._history_tool,
-            self._subscribe_tool
+            self._subscribe_tool,
         ]
 
     @property
@@ -363,20 +363,18 @@ class PubNubToolkit:
         """Get the subscribe tool."""
         return self._subscribe_tool
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """Clean up PubNub resources."""
         self.pubnub.stop()
 
 
-# Convenience function to create individual tools
 def create_pubnub_tools(
     publish_key: str,
     subscribe_key: str,
     user_id: str,
-    **kwargs
-) -> List[BaseTool]:
-    """
-    Create PubNub tools for use with LangChain agents.
+    **kwargs: Any,
+) -> list[BaseTool]:
+    """Create PubNub tools for use with LangChain agents.
 
     Args:
         publish_key: Your PubNub publish key
@@ -403,6 +401,6 @@ def create_pubnub_tools(
         publish_key=publish_key,
         subscribe_key=subscribe_key,
         user_id=user_id,
-        **kwargs
+        **kwargs,
     )
     return toolkit.get_tools()

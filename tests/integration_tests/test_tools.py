@@ -8,6 +8,8 @@ Run with: pytest tests/integration_tests/ -v
 Note: These tests require network connectivity and use PubNub demo keys.
 """
 
+from __future__ import annotations
+
 import json
 import os
 import time

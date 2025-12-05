@@ -5,13 +5,14 @@ They test tool initialization, schema validation, and basic functionality
 without making actual network calls.
 """
 
+from __future__ import annotations
+
 import json
-from typing import Any, Dict, Type
 from unittest.mock import MagicMock, patch
 
 import pytest
 from langchain_core.tools import BaseTool
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from langchain_pubnub import (
     PubNubHistoryTool,
@@ -449,29 +450,29 @@ class TestSchemaValidation:
         """Test that publish schema requires channel."""
         from langchain_pubnub.tools import PubNubPublishInput
 
-        with pytest.raises(Exception):  # Pydantic ValidationError
-            PubNubPublishInput(message="test")  # type: ignore
+        with pytest.raises(ValidationError):
+            PubNubPublishInput(message="test")  # type: ignore[call-arg]
 
     def test_publish_schema_rejects_missing_message(self) -> None:
         """Test that publish schema requires message."""
         from langchain_pubnub.tools import PubNubPublishInput
 
-        with pytest.raises(Exception):  # Pydantic ValidationError
-            PubNubPublishInput(channel="test")  # type: ignore
+        with pytest.raises(ValidationError):
+            PubNubPublishInput(channel="test")  # type: ignore[call-arg]
 
     def test_history_schema_rejects_missing_channels(self) -> None:
         """Test that history schema requires channels."""
         from langchain_pubnub.tools import PubNubHistoryInput
 
-        with pytest.raises(Exception):  # Pydantic ValidationError
-            PubNubHistoryInput()  # type: ignore
+        with pytest.raises(ValidationError):
+            PubNubHistoryInput()  # type: ignore[call-arg]
 
     def test_subscribe_schema_rejects_missing_channel(self) -> None:
         """Test that subscribe schema requires channel."""
         from langchain_pubnub.tools import PubNubSubscribeInput
 
-        with pytest.raises(Exception):  # Pydantic ValidationError
-            PubNubSubscribeInput()  # type: ignore
+        with pytest.raises(ValidationError):
+            PubNubSubscribeInput()  # type: ignore[call-arg]
 
     def test_publish_schema_accepts_dict_message(self) -> None:
         """Test that publish schema accepts dict messages."""

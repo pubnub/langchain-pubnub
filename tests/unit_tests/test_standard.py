@@ -4,21 +4,24 @@ These tests use the langchain-tests package to verify tools conform
 to LangChain's standard tool interface.
 """
 
-from typing import Any, Dict, Type
-from unittest.mock import MagicMock, patch
+from __future__ import annotations
+
+from typing import Any
+from unittest.mock import MagicMock
 
 import pytest
 
 try:
     from langchain_tests.unit_tests import ToolsUnitTests
+
     LANGCHAIN_TESTS_AVAILABLE = True
 except ImportError:
     LANGCHAIN_TESTS_AVAILABLE = False
-    ToolsUnitTests = object  # type: ignore
+    ToolsUnitTests = object  # type: ignore[misc, assignment]
 
 from langchain_core.tools import BaseTool
 
-from langchain_pubnub import PubNubPublishTool, PubNubHistoryTool, PubNubSubscribeTool
+from langchain_pubnub import PubNubHistoryTool, PubNubPublishTool, PubNubSubscribeTool
 
 
 # =============================================================================
@@ -55,21 +58,24 @@ def create_mock_pubnub() -> MagicMock:
 
 @pytest.mark.skipif(
     not LANGCHAIN_TESTS_AVAILABLE,
-    reason="langchain-tests not installed"
+    reason="langchain-tests not installed",
 )
 class TestPubNubPublishToolStandard(ToolsUnitTests):
     """Standard LangChain tests for PubNubPublishTool."""
 
     @property
-    def tool_constructor(self) -> Type[BaseTool]:
+    def tool_constructor(self) -> type[BaseTool]:
+        """Return the tool class."""
         return PubNubPublishTool
 
     @property
-    def tool_constructor_params(self) -> Dict[str, Any]:
+    def tool_constructor_params(self) -> dict[str, Any]:
+        """Return constructor parameters."""
         return {"pubnub": create_mock_pubnub()}
 
     @property
-    def tool_invoke_params_example(self) -> Dict[str, Any]:
+    def tool_invoke_params_example(self) -> dict[str, Any]:
+        """Return example invoke parameters."""
         return {
             "channel": "test-channel",
             "message": {"text": "Hello, World!"},
@@ -78,21 +84,24 @@ class TestPubNubPublishToolStandard(ToolsUnitTests):
 
 @pytest.mark.skipif(
     not LANGCHAIN_TESTS_AVAILABLE,
-    reason="langchain-tests not installed"
+    reason="langchain-tests not installed",
 )
 class TestPubNubHistoryToolStandard(ToolsUnitTests):
     """Standard LangChain tests for PubNubHistoryTool."""
 
     @property
-    def tool_constructor(self) -> Type[BaseTool]:
+    def tool_constructor(self) -> type[BaseTool]:
+        """Return the tool class."""
         return PubNubHistoryTool
 
     @property
-    def tool_constructor_params(self) -> Dict[str, Any]:
+    def tool_constructor_params(self) -> dict[str, Any]:
+        """Return constructor parameters."""
         return {"pubnub": create_mock_pubnub()}
 
     @property
-    def tool_invoke_params_example(self) -> Dict[str, Any]:
+    def tool_invoke_params_example(self) -> dict[str, Any]:
+        """Return example invoke parameters."""
         return {
             "channels": ["test-channel"],
             "count": 10,
@@ -101,21 +110,24 @@ class TestPubNubHistoryToolStandard(ToolsUnitTests):
 
 @pytest.mark.skipif(
     not LANGCHAIN_TESTS_AVAILABLE,
-    reason="langchain-tests not installed"
+    reason="langchain-tests not installed",
 )
 class TestPubNubSubscribeToolStandard(ToolsUnitTests):
     """Standard LangChain tests for PubNubSubscribeTool."""
 
     @property
-    def tool_constructor(self) -> Type[BaseTool]:
+    def tool_constructor(self) -> type[BaseTool]:
+        """Return the tool class."""
         return PubNubSubscribeTool
 
     @property
-    def tool_constructor_params(self) -> Dict[str, Any]:
+    def tool_constructor_params(self) -> dict[str, Any]:
+        """Return constructor parameters."""
         return {"pubnub": create_mock_pubnub()}
 
     @property
-    def tool_invoke_params_example(self) -> Dict[str, Any]:
+    def tool_invoke_params_example(self) -> dict[str, Any]:
+        """Return example invoke parameters."""
         return {
             "channel": "test-channel",
             "timeout": 1,
@@ -133,6 +145,7 @@ class TestToolsConformance:
 
     @pytest.fixture
     def mock_pubnub(self) -> MagicMock:
+        """Create a mock PubNub instance."""
         return create_mock_pubnub()
 
     def test_publish_tool_is_base_tool(self, mock_pubnub: MagicMock) -> None:
