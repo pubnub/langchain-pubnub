@@ -63,7 +63,7 @@ tools = create_pubnub_tools(
 )
 
 # Initialize LLM
-llm = ChatOpenAI(model="gpt-4")
+llm = ChatOpenAI(model="gpt-5")
 
 # Create agent
 prompt = PromptTemplate.from_template("""...""")
