@@ -12,7 +12,7 @@ from __future__ import annotations
 import json
 import threading
 import time
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 from langchain_core.tools import BaseTool
 from pubnub.exceptions import PubNubException
@@ -28,10 +28,10 @@ class PubNubPublishInput(BaseModel):
     """Input schema for PubNub publish operation."""
 
     channel: str = Field(description="The channel name to publish the message to")
-    message: str | dict[str, Any] = Field(
+    message: Union[str, dict[str, Any]] = Field(
         description="The message to publish. Can be a string or a JSON-serializable dictionary"
     )
-    meta: dict[str, Any] | None = Field(
+    meta: Optional[dict[str, Any]] = Field(
         default=None,
         description="Optional metadata to include with the message for filtering",
     )
@@ -49,11 +49,11 @@ class PubNubHistoryInput(BaseModel):
         default=False,
         description="Whether to include message metadata in the response",
     )
-    start: int | None = Field(
+    start: Optional[int] = Field(
         default=None,
         description="Timetoken to start fetching from (exclusive, for pagination)",
     )
-    end: int | None = Field(
+    end: Optional[int] = Field(
         default=None,
         description="Timetoken to fetch up to (inclusive)",
     )
@@ -97,9 +97,9 @@ class PubNubPublishTool(BaseTool):
     def _run(
         self,
         channel: str,
-        message: str | dict[str, Any],
-        meta: dict[str, Any] | None = None,
-        run_manager: CallbackManagerForToolRun | None = None,
+        message: Union[str, dict[str, Any]],
+        meta: Optional[dict[str, Any]] = None,
+        run_manager: Optional[CallbackManagerForToolRun] = None,
     ) -> str:
         """Execute the publish operation."""
         try:
@@ -155,9 +155,9 @@ class PubNubHistoryTool(BaseTool):
         channels: list[str],
         count: int = 25,
         include_meta: bool = False,
-        start: int | None = None,
-        end: int | None = None,
-        run_manager: CallbackManagerForToolRun | None = None,
+        start: Optional[int] = None,
+        end: Optional[int] = None,
+        run_manager: Optional[CallbackManagerForToolRun] = None,
     ) -> str:
         """Execute the history fetch operation."""
         try:
@@ -259,7 +259,7 @@ class PubNubSubscribeTool(BaseTool):
         channel: str,
         timeout: int = 5,
         max_messages: int = 10,
-        run_manager: CallbackManagerForToolRun | None = None,
+        run_manager: Optional[CallbackManagerForToolRun] = None,
     ) -> str:
         """Execute the subscribe operation."""
         try:
