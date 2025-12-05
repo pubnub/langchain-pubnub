@@ -22,7 +22,6 @@ from langchain_pubnub import (
     create_pubnub_tools,
 )
 
-
 # =============================================================================
 # Fixtures
 # =============================================================================
@@ -37,14 +36,14 @@ def mock_pubnub() -> MagicMock:
     publish_result = MagicMock()
     publish_result.result.timetoken = 17193163560057793
     mock.publish.return_value.channel.return_value.message.return_value.meta.return_value.sync.return_value = publish_result
-    mock.publish.return_value.channel.return_value.message.return_value.sync.return_value = publish_result
+    mock.publish.return_value.channel.return_value.message.return_value.sync.return_value = (
+        publish_result
+    )
 
     # Mock fetch_messages
     fetch_result = MagicMock()
     fetch_result.result.channels = {
-        "test-channel": [
-            MagicMock(message={"text": "Hello"}, timetoken=123456789, meta=None)
-        ]
+        "test-channel": [MagicMock(message={"text": "Hello"}, timetoken=123456789, meta=None)]
     }
     mock.fetch_messages.return_value.channels.return_value.maximum_per_channel.return_value.include_meta.return_value.sync.return_value = fetch_result
     mock.fetch_messages.return_value.channels.return_value.maximum_per_channel.return_value.include_meta.return_value.start.return_value.sync.return_value = fetch_result
@@ -107,9 +106,7 @@ class TestPubNubPublishTool:
         assert schema is not None
         assert issubclass(schema, BaseModel)
 
-    def test_input_schema_has_required_fields(
-        self, publish_tool: PubNubPublishTool
-    ) -> None:
+    def test_input_schema_has_required_fields(self, publish_tool: PubNubPublishTool) -> None:
         """Test that input schema has required fields."""
         schema = publish_tool.get_input_schema()
         schema_fields = schema.model_fields
@@ -117,9 +114,7 @@ class TestPubNubPublishTool:
         assert "channel" in schema_fields
         assert "message" in schema_fields
 
-    def test_input_schema_matches_invoke_params(
-        self, publish_tool: PubNubPublishTool
-    ) -> None:
+    def test_input_schema_matches_invoke_params(self, publish_tool: PubNubPublishTool) -> None:
         """Test that example params match the input schema."""
         example_params = {
             "channel": "test-channel",
@@ -133,10 +128,12 @@ class TestPubNubPublishTool:
         self, publish_tool: PubNubPublishTool, mock_pubnub: MagicMock
     ) -> None:
         """Test that invoke returns valid JSON."""
-        result = publish_tool.invoke({
-            "channel": "test-channel",
-            "message": "Hello",
-        })
+        result = publish_tool.invoke(
+            {
+                "channel": "test-channel",
+                "message": "Hello",
+            }
+        )
 
         # Should be valid JSON
         parsed = json.loads(result)
@@ -147,10 +144,12 @@ class TestPubNubPublishTool:
         self, publish_tool: PubNubPublishTool, mock_pubnub: MagicMock
     ) -> None:
         """Test successful publish response structure."""
-        result = publish_tool.invoke({
-            "channel": "test-channel",
-            "message": {"text": "Hello"},
-        })
+        result = publish_tool.invoke(
+            {
+                "channel": "test-channel",
+                "message": {"text": "Hello"},
+            }
+        )
 
         parsed = json.loads(result)
         assert parsed["success"] is True
@@ -161,11 +160,13 @@ class TestPubNubPublishTool:
         self, publish_tool: PubNubPublishTool, mock_pubnub: MagicMock
     ) -> None:
         """Test publish with metadata."""
-        result = publish_tool.invoke({
-            "channel": "test-channel",
-            "message": "Hello",
-            "meta": {"sender": "test-user"},
-        })
+        result = publish_tool.invoke(
+            {
+                "channel": "test-channel",
+                "message": "Hello",
+                "meta": {"sender": "test-user"},
+            }
+        )
 
         parsed = json.loads(result)
         assert parsed["success"] is True
@@ -203,18 +204,14 @@ class TestPubNubHistoryTool:
         assert schema is not None
         assert issubclass(schema, BaseModel)
 
-    def test_input_schema_has_required_fields(
-        self, history_tool: PubNubHistoryTool
-    ) -> None:
+    def test_input_schema_has_required_fields(self, history_tool: PubNubHistoryTool) -> None:
         """Test that input schema has required fields."""
         schema = history_tool.get_input_schema()
         schema_fields = schema.model_fields
 
         assert "channels" in schema_fields
 
-    def test_input_schema_matches_invoke_params(
-        self, history_tool: PubNubHistoryTool
-    ) -> None:
+    def test_input_schema_matches_invoke_params(self, history_tool: PubNubHistoryTool) -> None:
         """Test that example params match the input schema."""
         example_params = {
             "channels": ["test-channel"],
@@ -228,9 +225,11 @@ class TestPubNubHistoryTool:
         self, history_tool: PubNubHistoryTool, mock_pubnub: MagicMock
     ) -> None:
         """Test that invoke returns valid JSON."""
-        result = history_tool.invoke({
-            "channels": ["test-channel"],
-        })
+        result = history_tool.invoke(
+            {
+                "channels": ["test-channel"],
+            }
+        )
 
         parsed = json.loads(result)
         assert isinstance(parsed, dict)
@@ -240,10 +239,12 @@ class TestPubNubHistoryTool:
         self, history_tool: PubNubHistoryTool, mock_pubnub: MagicMock
     ) -> None:
         """Test successful history fetch response structure."""
-        result = history_tool.invoke({
-            "channels": ["test-channel"],
-            "count": 5,
-        })
+        result = history_tool.invoke(
+            {
+                "channels": ["test-channel"],
+                "count": 5,
+            }
+        )
 
         parsed = json.loads(result)
         assert parsed["success"] is True
@@ -282,18 +283,14 @@ class TestPubNubSubscribeTool:
         assert schema is not None
         assert issubclass(schema, BaseModel)
 
-    def test_input_schema_has_required_fields(
-        self, subscribe_tool: PubNubSubscribeTool
-    ) -> None:
+    def test_input_schema_has_required_fields(self, subscribe_tool: PubNubSubscribeTool) -> None:
         """Test that input schema has required fields."""
         schema = subscribe_tool.get_input_schema()
         schema_fields = schema.model_fields
 
         assert "channel" in schema_fields
 
-    def test_input_schema_matches_invoke_params(
-        self, subscribe_tool: PubNubSubscribeTool
-    ) -> None:
+    def test_input_schema_matches_invoke_params(self, subscribe_tool: PubNubSubscribeTool) -> None:
         """Test that example params match the input schema."""
         example_params = {
             "channel": "test-channel",
@@ -315,9 +312,7 @@ class TestPubNubToolkit:
 
     @patch("langchain_pubnub.tools.PubNub")
     @patch("langchain_pubnub.tools.PNConfiguration")
-    def test_init(
-        self, mock_config_class: MagicMock, mock_pubnub_class: MagicMock
-    ) -> None:
+    def test_init(self, mock_config_class: MagicMock, mock_pubnub_class: MagicMock) -> None:
         """Test toolkit initialization."""
         toolkit = PubNubToolkit(
             publish_key="test-pub-key",
@@ -383,9 +378,7 @@ class TestPubNubToolkit:
 
     @patch("langchain_pubnub.tools.PubNub")
     @patch("langchain_pubnub.tools.PNConfiguration")
-    def test_cleanup(
-        self, mock_config_class: MagicMock, mock_pubnub_class: MagicMock
-    ) -> None:
+    def test_cleanup(self, mock_config_class: MagicMock, mock_pubnub_class: MagicMock) -> None:
         """Test cleanup method."""
         toolkit = PubNubToolkit(
             publish_key="test-pub-key",

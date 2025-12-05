@@ -25,7 +25,6 @@ from langchain_pubnub import (
     create_pubnub_tools,
 )
 
-
 # Skip all tests in this module if SKIP_INTEGRATION_TESTS is set
 pytestmark = pytest.mark.skipif(
     os.getenv("SKIP_INTEGRATION_TESTS", "false").lower() == "true",
@@ -86,10 +85,12 @@ class TestPubNubPublishToolIntegration:
         self, publish_tool: PubNubPublishTool, unique_channel: str
     ) -> None:
         """Test publishing a string message."""
-        result = publish_tool.invoke({
-            "channel": unique_channel,
-            "message": "Hello, Integration Test!",
-        })
+        result = publish_tool.invoke(
+            {
+                "channel": unique_channel,
+                "message": "Hello, Integration Test!",
+            }
+        )
 
         parsed = json.loads(result)
         assert parsed["success"] is True
@@ -107,10 +108,12 @@ class TestPubNubPublishToolIntegration:
             "timestamp": time.time(),
         }
 
-        result = publish_tool.invoke({
-            "channel": unique_channel,
-            "message": message,
-        })
+        result = publish_tool.invoke(
+            {
+                "channel": unique_channel,
+                "message": message,
+            }
+        )
 
         parsed = json.loads(result)
         assert parsed["success"] is True
@@ -120,11 +123,13 @@ class TestPubNubPublishToolIntegration:
         self, publish_tool: PubNubPublishTool, unique_channel: str
     ) -> None:
         """Test publishing with metadata."""
-        result = publish_tool.invoke({
-            "channel": unique_channel,
-            "message": "Test message with meta",
-            "meta": {"priority": "high", "category": "test"},
-        })
+        result = publish_tool.invoke(
+            {
+                "channel": unique_channel,
+                "message": "Test message with meta",
+                "meta": {"priority": "high", "category": "test"},
+            }
+        )
 
         parsed = json.loads(result)
         assert parsed["success"] is True
@@ -144,10 +149,12 @@ class TestPubNubPublishToolIntegration:
             },
         }
 
-        result = publish_tool.invoke({
-            "channel": unique_channel,
-            "message": message,
-        })
+        result = publish_tool.invoke(
+            {
+                "channel": unique_channel,
+                "message": message,
+            }
+        )
 
         parsed = json.loads(result)
         assert parsed["success"] is True
@@ -165,10 +172,12 @@ class TestPubNubHistoryToolIntegration:
         self, history_tool: PubNubHistoryTool, unique_channel: str
     ) -> None:
         """Test fetching history from empty channel."""
-        result = history_tool.invoke({
-            "channels": [unique_channel],
-            "count": 10,
-        })
+        result = history_tool.invoke(
+            {
+                "channels": [unique_channel],
+                "count": 10,
+            }
+        )
 
         parsed = json.loads(result)
         assert parsed["success"] is True
@@ -183,10 +192,12 @@ class TestPubNubHistoryToolIntegration:
         """Test publishing a message then fetching it from history."""
         # Publish a message
         test_message = {"test_id": uuid.uuid4().hex, "content": "Test message"}
-        publish_result = publish_tool.invoke({
-            "channel": unique_channel,
-            "message": test_message,
-        })
+        publish_result = publish_tool.invoke(
+            {
+                "channel": unique_channel,
+                "message": test_message,
+            }
+        )
 
         publish_parsed = json.loads(publish_result)
         assert publish_parsed["success"] is True
@@ -195,10 +206,12 @@ class TestPubNubHistoryToolIntegration:
         time.sleep(2)
 
         # Fetch history
-        history_result = history_tool.invoke({
-            "channels": [unique_channel],
-            "count": 10,
-        })
+        history_result = history_tool.invoke(
+            {
+                "channels": [unique_channel],
+                "count": 10,
+            }
+        )
 
         history_parsed = json.loads(history_result)
         assert history_parsed["success"] is True
@@ -206,19 +219,19 @@ class TestPubNubHistoryToolIntegration:
         # Note: Message may or may not be in history depending on
         # whether Message Persistence is enabled on the keyset
 
-    def test_fetch_multiple_channels(
-        self, history_tool: PubNubHistoryTool
-    ) -> None:
+    def test_fetch_multiple_channels(self, history_tool: PubNubHistoryTool) -> None:
         """Test fetching history from multiple channels."""
         channels = [
             f"langchain-test-multi-{uuid.uuid4().hex[:8]}",
             f"langchain-test-multi-{uuid.uuid4().hex[:8]}",
         ]
 
-        result = history_tool.invoke({
-            "channels": channels,
-            "count": 5,
-        })
+        result = history_tool.invoke(
+            {
+                "channels": channels,
+                "count": 5,
+            }
+        )
 
         parsed = json.loads(result)
         assert parsed["success"] is True
@@ -228,10 +241,12 @@ class TestPubNubHistoryToolIntegration:
         self, history_tool: PubNubHistoryTool, unique_channel: str
     ) -> None:
         """Test fetching history with count limit."""
-        result = history_tool.invoke({
-            "channels": [unique_channel],
-            "count": 1,
-        })
+        result = history_tool.invoke(
+            {
+                "channels": [unique_channel],
+                "count": 1,
+            }
+        )
 
         parsed = json.loads(result)
         assert parsed["success"] is True
@@ -251,11 +266,13 @@ class TestPubNubSubscribeToolIntegration:
         """Test that subscribe respects timeout."""
         start_time = time.time()
 
-        result = subscribe_tool.invoke({
-            "channel": unique_channel,
-            "timeout": 2,
-            "max_messages": 10,
-        })
+        result = subscribe_tool.invoke(
+            {
+                "channel": unique_channel,
+                "timeout": 2,
+                "max_messages": 10,
+            }
+        )
 
         elapsed = time.time() - start_time
 
@@ -269,11 +286,13 @@ class TestPubNubSubscribeToolIntegration:
         self, subscribe_tool: PubNubSubscribeTool, unique_channel: str
     ) -> None:
         """Test that subscribe returns expected structure."""
-        result = subscribe_tool.invoke({
-            "channel": unique_channel,
-            "timeout": 1,
-            "max_messages": 5,
-        })
+        result = subscribe_tool.invoke(
+            {
+                "channel": unique_channel,
+                "timeout": 1,
+                "max_messages": 5,
+            }
+        )
 
         parsed = json.loads(result)
         assert parsed["success"] is True
@@ -347,10 +366,12 @@ class TestEndToEndIntegration:
         messages_sent = []
         for i in range(3):
             msg = {"index": i, "content": f"Message {i}"}
-            result = publish_tool.invoke({
-                "channel": unique_channel,
-                "message": msg,
-            })
+            result = publish_tool.invoke(
+                {
+                    "channel": unique_channel,
+                    "message": msg,
+                }
+            )
             parsed = json.loads(result)
             assert parsed["success"] is True
             messages_sent.append(msg)
@@ -359,23 +380,25 @@ class TestEndToEndIntegration:
         time.sleep(2)
 
         # Step 3: Fetch and verify
-        history_result = history_tool.invoke({
-            "channels": [unique_channel],
-            "count": 10,
-        })
+        history_result = history_tool.invoke(
+            {
+                "channels": [unique_channel],
+                "count": 10,
+            }
+        )
 
         history_parsed = json.loads(history_result)
         assert history_parsed["success"] is True
 
-    def test_tool_error_handling(
-        self, history_tool: PubNubHistoryTool
-    ) -> None:
+    def test_tool_error_handling(self, history_tool: PubNubHistoryTool) -> None:
         """Test that tools handle errors gracefully."""
         # Empty channel list should still return valid JSON
-        result = history_tool.invoke({
-            "channels": [],
-            "count": 10,
-        })
+        result = history_tool.invoke(
+            {
+                "channels": [],
+                "count": 10,
+            }
+        )
 
         # Should return valid JSON even if there's an error
         parsed = json.loads(result)

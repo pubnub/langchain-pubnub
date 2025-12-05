@@ -12,24 +12,26 @@ from __future__ import annotations
 import json
 import threading
 import time
-from typing import Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 
-from langchain_core.callbacks import CallbackManagerForToolRun
 from langchain_core.tools import BaseTool
-from pydantic import BaseModel, Field
 from pubnub.exceptions import PubNubException
 from pubnub.pnconfiguration import PNConfiguration
 from pubnub.pubnub import PubNub, SubscribeListener
+from pydantic import BaseModel, Field
+
+if TYPE_CHECKING:
+    from langchain_core.callbacks import CallbackManagerForToolRun
 
 
 class PubNubPublishInput(BaseModel):
     """Input schema for PubNub publish operation."""
 
     channel: str = Field(description="The channel name to publish the message to")
-    message: Union[str, dict[str, Any]] = Field(
+    message: str | dict[str, Any] = Field(
         description="The message to publish. Can be a string or a JSON-serializable dictionary"
     )
-    meta: Optional[dict[str, Any]] = Field(
+    meta: dict[str, Any] | None = Field(
         default=None,
         description="Optional metadata to include with the message for filtering",
     )
@@ -47,11 +49,11 @@ class PubNubHistoryInput(BaseModel):
         default=False,
         description="Whether to include message metadata in the response",
     )
-    start: Optional[int] = Field(
+    start: int | None = Field(
         default=None,
         description="Timetoken to start fetching from (exclusive, for pagination)",
     )
-    end: Optional[int] = Field(
+    end: int | None = Field(
         default=None,
         description="Timetoken to fetch up to (inclusive)",
     )
@@ -95,9 +97,9 @@ class PubNubPublishTool(BaseTool):
     def _run(
         self,
         channel: str,
-        message: Union[str, dict[str, Any]],
-        meta: Optional[dict[str, Any]] = None,
-        run_manager: Optional[CallbackManagerForToolRun] = None,
+        message: str | dict[str, Any],
+        meta: dict[str, Any] | None = None,
+        run_manager: CallbackManagerForToolRun | None = None,
     ) -> str:
         """Execute the publish operation."""
         try:
@@ -108,18 +110,22 @@ class PubNubPublishTool(BaseTool):
 
             envelope = publish_builder.sync()
 
-            return json.dumps({
-                "success": True,
-                "timetoken": envelope.result.timetoken,
-                "channel": channel,
-                "message": "Message published successfully",
-            })
+            return json.dumps(
+                {
+                    "success": True,
+                    "timetoken": envelope.result.timetoken,
+                    "channel": channel,
+                    "message": "Message published successfully",
+                }
+            )
         except PubNubException as e:
-            return json.dumps({
-                "success": False,
-                "error": str(e),
-                "channel": channel,
-            })
+            return json.dumps(
+                {
+                    "success": False,
+                    "error": str(e),
+                    "channel": channel,
+                }
+            )
 
 
 class PubNubHistoryTool(BaseTool):
@@ -149,9 +155,9 @@ class PubNubHistoryTool(BaseTool):
         channels: list[str],
         count: int = 25,
         include_meta: bool = False,
-        start: Optional[int] = None,
-        end: Optional[int] = None,
-        run_manager: Optional[CallbackManagerForToolRun] = None,
+        start: int | None = None,
+        end: int | None = None,
+        run_manager: CallbackManagerForToolRun | None = None,
     ) -> str:
         """Execute the history fetch operation."""
         try:
@@ -187,11 +193,13 @@ class PubNubHistoryTool(BaseTool):
 
             return json.dumps(result)
         except PubNubException as e:
-            return json.dumps({
-                "success": False,
-                "error": str(e),
-                "channels": channels,
-            })
+            return json.dumps(
+                {
+                    "success": False,
+                    "error": str(e),
+                    "channels": channels,
+                }
+            )
 
 
 class MessageCollector(SubscribeListener):
@@ -211,12 +219,14 @@ class MessageCollector(SubscribeListener):
         """Collect incoming messages."""
         with self.lock:
             if len(self.messages) < self.max_messages:
-                self.messages.append({
-                    "channel": message.channel,
-                    "message": message.message,
-                    "timetoken": message.timetoken,
-                    "publisher": message.publisher,
-                })
+                self.messages.append(
+                    {
+                        "channel": message.channel,
+                        "message": message.message,
+                        "timetoken": message.timetoken,
+                        "publisher": message.publisher,
+                    }
+                )
 
     def presence(self, pubnub: Any, presence: Any) -> None:
         """Handle presence events (not collected)."""
@@ -249,7 +259,7 @@ class PubNubSubscribeTool(BaseTool):
         channel: str,
         timeout: int = 5,
         max_messages: int = 10,
-        run_manager: Optional[CallbackManagerForToolRun] = None,
+        run_manager: CallbackManagerForToolRun | None = None,
     ) -> str:
         """Execute the subscribe operation."""
         try:
@@ -274,19 +284,23 @@ class PubNubSubscribeTool(BaseTool):
             # Unsubscribe
             subscription.unsubscribe()
 
-            return json.dumps({
-                "success": True,
-                "channel": channel,
-                "messages": collector.messages,
-                "count": len(collector.messages),
-                "timeout_reached": len(collector.messages) < max_messages,
-            })
+            return json.dumps(
+                {
+                    "success": True,
+                    "channel": channel,
+                    "messages": collector.messages,
+                    "count": len(collector.messages),
+                    "timeout_reached": len(collector.messages) < max_messages,
+                }
+            )
         except PubNubException as e:
-            return json.dumps({
-                "success": False,
-                "error": str(e),
-                "channel": channel,
-            })
+            return json.dumps(
+                {
+                    "success": False,
+                    "error": str(e),
+                    "channel": channel,
+                }
+            )
 
 
 class PubNubToolkit:

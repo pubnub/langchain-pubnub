@@ -11,9 +11,7 @@ def pytest_configure(config: pytest.Config) -> None:
     config.addinivalue_line(
         "markers", "requires(requirement): mark test as requiring specific feature"
     )
-    config.addinivalue_line(
-        "markers", "integration: mark test as an integration test"
-    )
+    config.addinivalue_line("markers", "integration: mark test as an integration test")
 
 
 @pytest.fixture(scope="session")

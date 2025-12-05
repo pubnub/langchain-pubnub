@@ -39,19 +39,23 @@ def basic_usage_example() -> None:
 
     # Publish a message
     print("\n1. Publishing a message...")
-    result = publish_tool.invoke({
-        "channel": "langchain-test",
-        "message": {"text": "Hello from LangChain!", "sender": "example-agent"},
-    })
+    result = publish_tool.invoke(
+        {
+            "channel": "langchain-test",
+            "message": {"text": "Hello from LangChain!", "sender": "example-agent"},
+        }
+    )
     print(f"Publish result: {result}")
 
     # Fetch history
     print("\n2. Fetching message history...")
-    result = history_tool.invoke({
-        "channels": ["langchain-test"],
-        "count": 5,
-        "include_meta": False,
-    })
+    result = history_tool.invoke(
+        {
+            "channels": ["langchain-test"],
+            "count": 5,
+            "include_meta": False,
+        }
+    )
     print(f"History result: {result}")
 
     # Cleanup
@@ -125,14 +129,12 @@ Thought: {agent_scratchpad}"""
 
     # Example queries
     print("\n--- Agent Query 1: Publish a message ---")
-    agent_executor.invoke({
-        "input": "Send a greeting message to the 'announcements' channel saying 'Hello everyone!'"
-    })
+    agent_executor.invoke(
+        {"input": "Send a greeting message to the 'announcements' channel saying 'Hello everyone!'"}
+    )
 
     print("\n--- Agent Query 2: Get message history ---")
-    agent_executor.invoke({
-        "input": "What are the last 3 messages on the 'announcements' channel?"
-    })
+    agent_executor.invoke({"input": "What are the last 3 messages on the 'announcements' channel?"})
 
 
 # ============================================================================
@@ -186,9 +188,7 @@ def function_tool_example() -> None:
             List of recent messages from the channel
         """
         try:
-            envelope = (
-                pubnub.fetch_messages().channels([channel]).maximum_per_channel(count).sync()
-            )
+            envelope = pubnub.fetch_messages().channels([channel]).maximum_per_channel(count).sync()
             messages = envelope.result.channels.get(channel, [])
             return str([{"message": m.message, "time": m.timetoken} for m in messages])
         except Exception as e:
@@ -196,10 +196,12 @@ def function_tool_example() -> None:
 
     # Test the function tools
     print("\nPublishing a test message...")
-    result = publish_message.invoke({
-        "channel": "test-channel",
-        "message": "Test from function tool!",
-    })
+    result = publish_message.invoke(
+        {
+            "channel": "test-channel",
+            "message": "Test from function tool!",
+        }
+    )
     print(f"Result: {result}")
 
     print("\nFetching history...")

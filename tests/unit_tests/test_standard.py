@@ -23,7 +23,6 @@ from langchain_core.tools import BaseTool
 
 from langchain_pubnub import PubNubHistoryTool, PubNubPublishTool, PubNubSubscribeTool
 
-
 # =============================================================================
 # Mock PubNub for Standard Tests
 # =============================================================================
@@ -37,7 +36,9 @@ def create_mock_pubnub() -> MagicMock:
     publish_result = MagicMock()
     publish_result.result.timetoken = 17193163560057793
     mock.publish.return_value.channel.return_value.message.return_value.meta.return_value.sync.return_value = publish_result
-    mock.publish.return_value.channel.return_value.message.return_value.sync.return_value = publish_result
+    mock.publish.return_value.channel.return_value.message.return_value.sync.return_value = (
+        publish_result
+    )
 
     # Mock fetch_messages
     fetch_result = MagicMock()
