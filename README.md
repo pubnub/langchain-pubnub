@@ -2,7 +2,6 @@
 
 [![PyPI version](https://badge.fury.io/py/langchain-pubnub.svg)](https://badge.fury.io/py/langchain-pubnub)
 [![Python Version](https://img.shields.io/pypi/pyversions/langchain-pubnub.svg)](https://pypi.org/project/langchain-pubnub/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 LangChain integration for [PubNub](https://www.pubnub.com/) real-time messaging platform. This package provides tools that allow LangChain agents to publish messages, fetch message history, and subscribe to real-time updates.
 
@@ -121,14 +120,14 @@ Subscribe to a channel and collect real-time messages.
 ```python
 result = subscribe_tool.invoke({
     "channel": "my-channel",
-    "timeout": 5,
+    "timeout": 300,
     "max_messages": 10
 })
 ```
 
 **Parameters:**
 - `channel` (str, required): The channel to subscribe to
-- `timeout` (int, optional): Max seconds to wait (default: 5)
+- `timeout` (int, optional): Max seconds to wait (default: 300)
 - `max_messages` (int, optional): Max messages to collect (default: 10)
 
 ## Configuration Options
@@ -172,9 +171,6 @@ pytest tests/integration_tests/ -v
 
 # Run all tests with coverage
 pytest --cov=langchain_pubnub --cov-report=term-missing
-
-# Skip integration tests
-SKIP_INTEGRATION_TESTS=true pytest
 ```
 
 ### Linting

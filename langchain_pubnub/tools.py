@@ -64,7 +64,7 @@ class PubNubSubscribeInput(BaseModel):
 
     channel: str = Field(description="The channel name to subscribe to")
     timeout: int = Field(
-        default=5,
+        default=300,
         description="Maximum time in seconds to wait for messages",
     )
     max_messages: int = Field(
@@ -257,7 +257,7 @@ class PubNubSubscribeTool(BaseTool):
     def _run(
         self,
         channel: str,
-        timeout: int = 5,
+        timeout: int = 300,
         max_messages: int = 10,
         run_manager: Optional[CallbackManagerForToolRun] = None,
     ) -> str:
