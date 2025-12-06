@@ -9,7 +9,7 @@ LangChain integration for [PubNub](https://www.pubnub.com/) real-time messaging 
 ## Installation
 
 ```bash
-pip install langchain-pubnub
+pip install langchain-pubnub langchain-core langchain langgraph-prebuilt langgraph langchain-openai
 ```
 
 ## Quick Start
