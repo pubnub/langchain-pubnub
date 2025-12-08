@@ -502,5 +502,5 @@ class TestSchemaValidation:
         from langchain_pubnub.tools import PubNubSubscribeInput
 
         schema = PubNubSubscribeInput(channel="test")
-        assert schema.timeout == 5
+        assert schema.timeout == 300
         assert schema.max_messages == 10
